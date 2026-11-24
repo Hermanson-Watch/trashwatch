@@ -1,0 +1,229 @@
+ 
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TrashWatch 0.5</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#eef3ee;color:#18392b;font:16px system-ui}
+header{background:#174c36;color:white;padding:25px}
+header h1{margin:0;font-size:34px}
+main{max-width:540px;margin:auto;padding:18px}
+form{background:white;padding:22px;border-radius:20px}
+label{display:block;font-weight:600;margin:16px 0 6px}
+input:not([type=checkbox]),select,textarea,button{
+width:100%;padding:12px;border:1px solid #bdcfc3;
+border-radius:9px;font:inherit}
+button{background:#216746;color:white;border:0;
+cursor:pointer;margin-top:12px}
+button:disabled{opacity:.5}
+textarea{min-height:90px}
+#preview{max-width:100%;max-height:240px;border-radius:10px;margin-top:10px}
+#msg{white-space:pre-wrap;overflow-wrap:anywhere}
+small,footer{color:#52675b}
+footer{text-align:center;padding:20px;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+<h1>🌱 TrashWatch</h1>
+Gemeinsam gegen den Müll.
+</header>
+<main>
+<form id="form">
+<h2>Neue Müllmeldung</h2>
+<small>Version 0.5 – Testbetrieb.
+Nur Testdaten verwenden. Keine Personen fotografieren.</small>
+
+<label for="photo">Foto hinzufügen</label>
+<input id="photo" type="file" accept="image/jpeg,image/png,image/webp">
+<img id="preview" hidden alt="Fotovorschau">
+
+<label for="address">Fundort</label>
+<button type="button" id="gps">GPS-Standort erfassen</button>
+<p id="loc">Kein GPS-Standort erfasst</p>
+<input id="address" placeholder="Adresse oder Fundort">
+
+<label for="category">Müllart</label>
+<select id="category" required>
+<option value="">Bitte auswählen</option>
+<option>Wilder Müll</option>
+<option>Hausmüll</option>
+<option>Sperrmüll</option>
+<option>Elektroschrott</option>
+<option>Bauschutt</option>
+<option>Plastik</option>
+<option>Gefahrstoffe</option>
+<option>Sonstiges</option>
+</select>
+
+<label for="amount">Müllmenge</label>
+<select id="amount">
+<option>Kleine Menge</option>
+<option>Mehrere Müllsäcke</option>
+<option>Große Ablagerung</option>
+</select>
+
+<label>
+<input type="checkbox" id="danger">
+Gefahr für Mensch oder Umwelt
+</label>
+
+<label for="description">Beschreibung (optional)</label>
+<textarea id="description" maxlength="1000"
+placeholder="Was hast du entdeckt?"></textarea>
+
+<button id="send" disabled>Testmeldung absenden</button>
+<p id="msg" role="status">Verbindung wird vorbereitet …</p>
+</form>
+<footer>
+TrashWatch verfolgt Müll – keine Menschen.<br>
+Version 0.5
+</footer>
+</main>
+
+<script type="module">
+const $ = id => document.getElementById(id);
+let client, coords = null, pending = null, previewUrl;
+const msg = t => $("msg").textContent = t;
+
+$("photo").onchange = () => {
+ if(previewUrl) URL.revokeObjectURL(previewUrl);
+ const f = $("photo").files[0];
+ $("preview").hidden = !f;
+ if(f){
+  previewUrl = URL.createObjectURL(f);
+  $("preview").src = previewUrl;
+ }
+};
+
+$("gps").onclick = () => {
+ if(!navigator.geolocation){
+  $("loc").textContent = "GPS nicht verfügbar.";
+  return;
+ }
+ navigator.geolocation.getCurrentPosition(p => {
+  coords = p.coords;
+  $("loc").textContent =
+   "GPS: " + coords.latitude.toFixed(5) +
+   ", " + coords.longitude.toFixed(5);
+ }, () => {
+  $("loc").textContent =
+   "GPS nicht verfügbar. Bitte Adresse eingeben.";
+ }, {timeout:12000});
+};
+
+try {
+ const {createClient} = await import(
+ "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/+esm"
+ );
+ client = createClient(
+ "https://bqhaddawiuvgrlvgkgqj.supabase.co",
+ "sb_publishable_hqsj1DSit04r8Cqh5uT-mQ_wD0RZxly"
+ );
+ $("send").disabled = false;
+ msg("Bereit. Keine Registrierung erforderlich.");
+} catch(e){
+ msg("Verbindungsbibliothek konnte nicht geladen werden.");
+}
+
+$("form").onsubmit = async e => {
+ e.preventDefault();
+
+ if(!pending && !coords && !$("address").value.trim()){
+  msg("Bitte einen Fundort eingeben.");
+  return;
+ }
+
+ const file = $("photo").files[0];
+ if(file && (
+ !["image/jpeg","image/png","image/webp"].includes(file.type)
+ || file.size > 10485760)){
+  msg("Bitte JPG, PNG oder WebP bis 10 MB auswählen.");
+  return;
+ }
+
+ $("send").disabled = true;
+
+ try {
+  msg("Gastanmeldung wird vorbereitet …");
+  let {data,error} = await client.auth.getSession();
+  if(error) throw error;
+
+  if(!data.session){
+   ({data,error} = await client.auth.signInAnonymously());
+   if(error) throw error;
+  }
+
+  const user = data.session.user;
+
+  if(!pending){
+   msg("Meldung wird gespeichert …");
+   const result = await client.from("reports").insert({
+    user_id:user.id,
+    latitude:coords?.latitude ?? null,
+    longitude:coords?.longitude ?? null,
+    address:$("address").value,
+    category:$("category").value,
+    amount:$("amount").value,
+    danger:$("danger").checked,
+    description:$("description").value
+   }).select("id").single();
+
+   if(result.error) throw result.error;
+   pending = {id:result.data.id,file,path:null,user:user.id};
+  }
+
+  if(pending.user !== user.id){
+   throw new Error("Gastsitzung wurde geändert.");
+  }
+
+  if(pending.file){
+   msg("Foto wird gespeichert …");
+
+   if(!pending.path){
+    const ext = {
+     "image/jpeg":"jpg",
+     "image/png":"png",
+     "image/webp":"webp"
+    }[pending.file.type];
+
+    const path = user.id + "/" + pending.id + "/" +
+     crypto.randomUUID() + "." + ext;
+
+    const upload = await client.storage
+     .from("report-images").upload(path,pending.file);
+
+    if(upload.error) throw upload.error;
+    pending.path = path;
+   }
+
+   const image = await client.from("report_images").insert({
+    report_id:pending.id,
+    image_url:pending.path,
+    image_type:"before"
+   });
+
+   if(image.error) throw image.error;
+  }
+
+  msg("Vielen Dank! Testmeldung gespeichert. ID: " + pending.id);
+  pending = null;
+  $("form").reset();
+  coords = null;
+  $("preview").hidden = true;
+  $("loc").textContent = "Kein GPS-Standort erfasst";
+
+ } catch(e){
+  msg((pending ?
+   "Meldung gespeichert. Foto noch nicht vollständig übertragen. Erneut absenden versucht den Foto-Schritt erneut.\n"
+   : "") + "Fehler: " + e.message);
+ } finally {
+  $("send").disabled = false;
+ }
+};
+</script>
+</body>
+</html>

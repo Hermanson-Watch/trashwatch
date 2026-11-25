@@ -170,10 +170,9 @@ $("form").onsubmit = async e => {
     amount:$("amount").value,
     danger:$("danger").checked,
     description:$("description").value
-   }).select("id").single();
-
-   if(result.error) throw result.error;
-   pending = {id:result.data.id,file,path:null,user:user.id};
+   }).select("id,report_number,status").single();
+if(result.error) throw result.error;
+pending = {id:result.data.id,number:result.data.report_number,status:result.data.status,file,path:null,user:user.id};
   }
 
   if(pending.user !== user.id){
@@ -209,7 +208,7 @@ $("form").onsubmit = async e => {
    if(image.error) throw image.error;
   }
 
-  msg("Vielen Dank! Testmeldung gespeichert. ID: " + pending.id);
+msg("Vielen Dank für deinen Einsatz!\nMeldungsnummer: " + pending.number + "\nStatus: Eingegangen");
   pending = null;
   $("form").reset();
   coords = null;

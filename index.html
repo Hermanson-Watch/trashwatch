@@ -4,23 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#174c36">
-<title>TrashWatch 0.7</title>
+<title>TrashWatch 0.8</title>
 <style>
 :root{color-scheme:light dark;--bg:#eef4ef;--card:#fff;--ink:#18392b;--muted:#52675b;--line:#c9dbce;--soft:#e4f0e7;--green:#176342;--accent:#287b50}
 @media(prefers-color-scheme:dark){:root{--bg:#101b15;--card:#1c2a22;--ink:#e4f3e9;--muted:#b3c9ba;--line:#45634f;--soft:#263e30;--green:#216746;--accent:#a5d6a7}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px system-ui}header{background:#143e30;color:white;padding:24px 18px}.brand{max-width:600px;margin:auto;display:flex;align-items:center;gap:14px}h1{margin:0;font-size:30px}.brand small{color:#bce0c9}main{max-width:600px;margin:auto;padding:20px 16px}h2{margin:0 0 6px;font-size:27px}p{line-height:1.5}small,.muted,footer{color:var(--muted)}form{background:var(--card);padding:20px;border:1px solid var(--line);border-radius:22px;margin-top:20px}fieldset{border:0;padding:0;margin:0 0 24px;min-width:0}legend{font-weight:750;margin-bottom:12px}label{display:block;font-weight:600;margin:12px 0 6px}input:not([type=checkbox]),select,textarea,button{font:inherit;width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}button{cursor:pointer;font-weight:650}button:disabled{opacity:.5;cursor:default}button.primary{background:var(--green);color:white;border:0;min-height:52px}button.secondary{background:var(--soft);color:var(--ink)}textarea{min-height:100px;resize:vertical}.photo{border:2px dashed var(--line);border-radius:16px;padding:18px;text-align:center}.photo span{display:block;font-size:30px}.photo input{margin-top:10px;font-size:13px}#preview{max-width:100%;max-height:260px;border-radius:12px;margin-top:12px}.categories{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.categories button{background:var(--soft);min-height:80px;font-size:14px}.categories button span{display:block;font-size:25px;margin-bottom:4px}.categories button[aria-pressed=true]{outline:3px solid var(--accent);outline-offset:-3px}.danger{display:flex;gap:10px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:12px}.danger input{width:20px;height:20px;accent-color:var(--green)}#msg{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}#success{background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center;margin-top:16px}#success strong{display:block;font-size:23px;overflow-wrap:anywhere;margin:8px 0}.check{font-size:32px;color:var(--accent)}footer{text-align:center;padding:24px 0;font-size:13px}nav{display:flex;justify-content:space-around;gap:8px;border-top:1px solid var(--line);padding-top:15px;text-align:center;font-size:12px}nav span{flex:1}nav b{display:block;font-size:20px}[hidden]{display:none!important}:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+nav button{font-size:12px;flex:1;padding:9px 4px}nav button[aria-current=page]{background:var(--soft);border:2px solid var(--accent)}.report{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;overflow-wrap:anywhere}.report img{width:100%;max-height:220px;object-fit:contain;border-radius:10px}.report h3{margin:8px 0}.report p{margin:6px 0}.report .state{color:var(--accent);font-weight:bold}
 </style>
 </head>
 <body>
 <header><div class="brand"><svg width="48" height="58" viewBox="0 0 64 76" aria-hidden="true"><path d="M32 73 C25 60 3 43 3 29 A29 29 0 1 1 61 29 C61 43 39 63 32 73Z" fill="#a5d6a7"/><path d="M19 40 Q10 15 47 12 Q52 43 19 40Z" fill="#174c36"/><path d="M15 48 L39 22" stroke="#a5d6a7" stroke-width="3" stroke-linecap="round"/></svg><div><h1>TrashWatch</h1><small>Gemeinsam gegen den Müll.</small></div></div></header>
-<main><h2>Entdeckt. Gemeldet.</h2><p class="muted">Dein Beitrag für eine saubere Umwelt.</p><small>Version 0.7 · Testbetrieb. Nur Testdaten verwenden. Keine Personen fotografieren.</small>
+<main><div id="meldView"><h2>Entdeckt. Gemeldet.</h2><p class="muted">Dein Beitrag für eine saubere Umwelt.</p><small>Version 0.8 · Testbetrieb. Nur Testdaten verwenden. Keine Personen fotografieren.</small>
 <form id="form">
 <fieldset><legend>1. Müll fotografieren (optional)</legend><div class="photo"><label for="photo"><span aria-hidden="true">📷</span>Foto hinzufügen</label><small>Kamera oder Galerie</small><input id="photo" type="file" accept="image/jpeg,image/png,image/webp"><img id="preview" hidden alt="Fotovorschau"></div></fieldset>
 <fieldset><legend>2. Fundort erfassen</legend><button type="button" class="secondary" id="gps">◎ GPS-Standort erfassen</button><p id="loc" role="status">Kein GPS-Standort erfasst</p><label for="address">Adresse oder Fundort</label><input id="address" placeholder="Straße, Ort oder Beschreibung"></fieldset>
 <fieldset><legend>3. Müllart auswählen</legend><div class="categories" id="categories"></div><label for="category">Ausgewählte Müllart</label><select id="category" required><option value="">Bitte auswählen</option><option>Wilder Müll</option><option>Hausmüll</option><option>Sperrmüll</option><option>Elektroschrott</option><option>Bauschutt</option><option>Plastik</option><option>Gefahrstoffe</option><option>Sonstiges</option></select></fieldset>
 <fieldset><legend>4. Weitere Angaben</legend><label for="amount">Müllmenge</label><select id="amount"><option>Kleine Menge</option><option>Mehrere Müllsäcke</option><option>Große Ablagerung</option></select><label class="danger"><input type="checkbox" id="danger">Gefahr für Mensch oder Umwelt</label><label for="description">Beschreibung (optional)</label><textarea id="description" maxlength="1000" placeholder="Was hast du entdeckt?"></textarea></fieldset>
 <button class="primary" id="send" disabled>Testmeldung absenden</button><p id="msg" role="status">Verbindung wird vorbereitet …</p><section id="success" role="status" hidden><div class="check">✓</div><h3>Vielen Dank für deinen Einsatz!</h3><small>Deine Meldungsnummer</small><strong id="number"></strong><span id="status"></span></section>
-</form><footer>TrashWatch verfolgt Müll – keine Menschen.<p>Version 0.7</p><nav aria-label="Funktionsübersicht"><span><b>＋</b>Melden</span><span><b>☷</b>Meine Meldungen<br>Geplant</span><span><b>♧</b>Naturmodus<br>Geplant</span></nav></footer></main>
+</form></div><section id="mineView" hidden><h2>Meine Meldungen</h2><p class="muted">Dein Beitrag für eine saubere Umwelt.</p><small>Gastmeldungen sind an diesen Browser gebunden. Beim Löschen der Browserdaten kann der Zugriff verloren gehen.</small><p><button id="refresh" class="secondary" type="button">↻ Aktualisieren</button></p><p id="mineMsg" role="status"></p><div id="reportList"></div><button id="more" type="button" hidden>Weitere Meldungen laden</button></section><footer>TrashWatch verfolgt Müll – keine Menschen.<p>Version 0.8</p><nav aria-label="Funktionsübersicht"><button id="navMeld" type="button" aria-current="page"><b>＋</b>Melden</button><button id="navMine" type="button"><b>☷</b>Meine Meldungen</button><button type="button" disabled><b>♧</b>Naturmodus<br>Geplant</button></nav></footer></main>
 <script type="module">
 const $ = id => document.getElementById(id);
 let client, coords=null, pending=null, previewUrl, gpsToken=0, busy=false;
@@ -45,6 +46,36 @@ if(pending.file){msg("Foto wird gespeichert …");if(!pending.path){const ext={"
 $("number").textContent=pending.number||("ID: "+pending.id);$("status").textContent="Status: "+(pending.status==="submitted"?"Eingegangen":pending.status||"Unbekannt");$("success").hidden=false;msg("");pending=null;$("form").reset();sync();coords=null;if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null}$("preview").removeAttribute("src");$("preview").hidden=true;$("loc").textContent="Kein GPS-Standort erfasst";
 }catch(e){msg((pending?"Meldung gespeichert. Foto noch nicht vollständig übertragen. Erneut absenden versucht den Foto-Schritt erneut.\n":"")+"Fehler: "+e.message)}finally{busy=false;$("send").disabled=false;lockFields(Boolean(pending));$("send").textContent=pending?"Fotoübertragung erneut versuchen":"Testmeldung absenden"}
 };
+
+let listToken=0, offset=0;
+const statusLabel=v=>({submitted:"Eingegangen",in_progress:"In Bearbeitung",resolved:"Beseitigt",closed:"Abgeschlossen"}[v]||v||"Unbekannt");
+function line(parent,tag,value,cls){const el=document.createElement(tag);el.textContent=value;if(cls)el.className=cls;parent.append(el);return el}
+async function loadMine(append=false){
+ const token=++listToken;const list=$("reportList");const info=$("mineMsg");$("more").hidden=true;
+ if(!append){list.replaceChildren();offset=0}info.textContent="Meldungen werden geladen …";$("refresh").disabled=true;
+ try{
+ if(!client)throw new Error("Verbindung noch nicht verfügbar.");
+ const {data:sessionData,error:sessionError}=await client.auth.getSession();if(sessionError)throw sessionError;
+ if(token!==listToken)return;
+ if(!sessionData.session){info.textContent="Noch keine Meldungen in diesem Browser vorhanden.";return}
+ const uid=sessionData.session.user.id;
+ const {data:reports,error}=await client.from("reports").select("id,report_number,status,created_at,address,latitude,longitude,category,amount,description,danger").eq("user_id",uid).order("id",{ascending:false}).range(offset,offset+19);if(error)throw error;
+ if(token!==listToken)return;
+ for(const r of reports){
+ const card=document.createElement("article");card.className="report";
+ line(card,"small",r.report_number||"ID: "+r.id,"muted");line(card,"h3",r.category||"Müllmeldung");line(card,"p",statusLabel(r.status),"state");
+ line(card,"p",r.address||((r.latitude!=null&&r.longitude!=null)?"GPS: "+Number(r.latitude).toFixed(5)+", "+Number(r.longitude).toFixed(5):"Fundort nicht angegeben"));
+ line(card,"p",r.amount||"");if(r.created_at)line(card,"small",new Date(r.created_at).toLocaleString("de-DE"),"muted");if(r.description)line(card,"p",r.description);if(r.danger)line(card,"p","⚠ Gefahr gemeldet");
+ list.append(card);
+ try{const {data:images,error:ie}=await client.from("report_images").select("image_url,image_type").eq("report_id",r.id);if(ie)throw ie;
+ for(const image of images){if(token!==listToken)return;if(!image.image_url?.startsWith(uid+"/"+r.id+"/"))continue;const {data:signed,error:se}=await client.storage.from("report-images").createSignedUrl(image.image_url,300);if(se)throw se;if(token!==listToken)return;const img=document.createElement("img");img.src=signed.signedUrl;img.alt="Foto zur Müllmeldung";img.loading="lazy";img.referrerPolicy="no-referrer";card.append(img)}
+ }catch(e){if(token!==listToken)return;line(card,"small","Foto konnte nicht geladen werden.","muted")}
+ }
+ if(token!==listToken)return;offset+=reports.length;info.textContent=offset?offset+" Meldung(en) angezeigt":"Noch keine Meldungen in diesem Browser vorhanden.";$("more").hidden=reports.length<20;
+ }catch(e){if(token===listToken)info.textContent="Meldungen konnten nicht geladen werden: "+e.message}finally{if(token===listToken)$("refresh").disabled=false}
+}
+function showMine(mine){if(busy)return;$("meldView").hidden=mine;$("mineView").hidden=!mine;$("navMine").setAttribute("aria-current",mine?"page":"false");$("navMeld").setAttribute("aria-current",mine?"false":"page");if(mine)loadMine();else{++listToken;$("reportList").replaceChildren()}window.scrollTo(0,0)}
+$("navMine").onclick=()=>showMine(true);$("navMeld").onclick=()=>showMine(false);$("refresh").onclick=()=>loadMine();$("more").onclick=()=>loadMine(true);
 </script>
 </body>
 </html>
